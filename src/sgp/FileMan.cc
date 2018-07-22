@@ -23,10 +23,6 @@
 #include "PlatformIO.h"
 #include "Debug.h"
 
-#if MACOS_USE_RESOURCES_FROM_BUNDLE && defined __APPLE__  && defined __MACH__
-#include <CoreFoundation/CFBundle.h>
-#endif
-
 #if CASE_SENSITIVE_FS
 #include <dirent.h>
 #include <SDL_rwops.h>
@@ -54,39 +50,6 @@ static void SetFileManCurrentDirectory(char const* const pcDirectory);
  * Abort program if conversion is not found.
  * @return file mode for fopen call and posix mode using parameter 'posixMode' */
 static const char* GetFileOpenModes(FileOpenFlags flags, int *posixMode);
-
-#if MACOS_USE_RESOURCES_FROM_BUNDLE && defined __APPLE__  && defined __MACH__
-
-void SetBinDataDirFromBundle(void)
-{
-	CFBundleRef const app_bundle = CFBundleGetMainBundle();
-	if (app_bundle == NULL)
-	{
-		fputs("WARNING: Failed to get main bundle.\n", stderr);
-		return;
-	}
-
-	CFURLRef const app_url = CFBundleCopyBundleURL(app_bundle);
-	if (app_url == NULL)
-	{
-		fputs("WARNING: Failed to get URL of bundle.\n", stderr);
-		return;
-	}
-
-#define RESOURCE_PATH "/Contents/Resources/ja2"
-	char app_path[PATH_MAX + lengthof(RESOURCE_PATH)];
-	if (!CFURLGetFileSystemRepresentation(app_url, TRUE, (UInt8*)app_path, PATH_MAX))
-	{
-		fputs("WARNING: Failed to get application path.\n", stderr);
-		return;
-	}
-
-	strcat(app_path, RESOURCE_PATH);
-	ConfigSetValue(BinDataDir, app_path);
-#undef RESOURCE_PATH
-}
-
-#endif
 
 /** Find config folder and switch into it. */
 std::string FileMan::switchTmpFolder(std::string home)
